@@ -1,0 +1,19 @@
+# Never commit DB creds
+config.php
+
+# Moodle data (usually outside web root, but ignore just in case)
+moodledata/
+moodledata/*
+
+# Logs, caches, local custom cache dirs
+*/cache/
+*/local/cache/
+localcache/
+cache/
+temp/
+sessions/
+
+# OS/editor junk
+.DS_Store
+*.swp
+.vscode/
