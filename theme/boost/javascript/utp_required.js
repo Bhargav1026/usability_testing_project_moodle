@@ -5,26 +5,44 @@
     var items = root.querySelectorAll('.mform .fitem.row, .mform .form-group');
     items.forEach(function (item) {
       var label = item.querySelector('.col-form-label, .form-label, label');
-      var requiredIcon = item.querySelector('.form-label-addon .form-required, .form-required, abbr.required');
-
-      if (label && requiredIcon) {
-        // Append a textual cue once
-        if (!label.querySelector('.utp-required-text')) {
-          var span = document.createElement('span');
-          span.className = 'utp-required-text';
-          span.textContent = ' (Required)';
-          span.style.fontWeight = '600';
-          span.style.marginLeft = '0.35rem';
-          label.appendChild(span);
-        }
-      }
-
-      // Add ARIA required to the first form control in the same row.
+      var addon = item.querySelector('.form-label-addon');
       var control = item.querySelector('input, select, textarea');
-      if (control && requiredIcon) {
+
+      // Determine "required" safely:
+      // 1) Prefer native attributes on the control
+      var hasNativeRequired = !!(control && (
+        control.required ||
+        control.hasAttribute('required') ||
+        (control.getAttribute && control.getAttribute('aria-required') === 'true')
+      ));
+
+      // 2) Fallback to explicit required markers in/near the label (NOT help icons)
+      //    - Moodle uses ".form-required" or <abbr class="required" title="Required">
+      //    - Exclude help icons: ".helptooltip", elements with role="img", or font-awesome question icons.
+      var hasLabelMarker = !!item.querySelector(
+        '.form-label .form-required, .col-form-label .form-required, ' +
+        'label .form-required, abbr.required[title*="Required" i]'
+      );
+      var hasHelpIconOnly = !!item.querySelector(
+        '.helptooltip, [data-region="help-icon"], .iconhelp, .fa-circle-question, .fa-question-circle'
+      );
+
+      // Final required decision
+      var isRequired = hasNativeRequired || (hasLabelMarker && !hasHelpIconOnly);
+
+      // Guard against duplicates:
+      // If the label OR the label-addon already contains textual "Required", skip adding our span.
+      var addonHasRequiredText = !!(addon && /required/i.test((addon.textContent || '').trim()));
+      var labelHasRequiredText = !!(label && /(^|\s)required\b/i.test((label.textContent || '').trim()));
+      var alreadyHasRequiredText = addonHasRequiredText || labelHasRequiredText;
+
+      // Do not append textual "(Required)" via JS to avoid clashes with core markup.
+      // We only ensure accessibility attributes on the control below.
+
+      // Reflect ARIA/native attributes only when we are confident it's required.
+      if (control && isRequired) {
         if (!control.getAttribute('aria-required')) control.setAttribute('aria-required', 'true');
-        // Reflect in HTML too (non-invasive)
-        if (!control.required) try { control.required = true; } catch (e) {}
+        try { if (!control.required) control.required = true; } catch (e) {}
       }
     });
   }

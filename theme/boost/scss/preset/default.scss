@@ -114,6 +114,12 @@ $enable-smooth-scroll: not $behatsite !default;
 // Import Core moodle CSS
 @import "moodle";
 
+// Import custom post/forum improvements
+@import "post";
+
+// Import enhanced menu icons
+@import "menu-icons";
+
 //
 // Preset CSS
 //

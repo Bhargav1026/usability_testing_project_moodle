@@ -1,0 +1,73 @@
+// Enhanced menu icons for better visibility
+
+// Common icon styles for navigation items
+.nav-item, .list-group-item {
+    .icon {
+        width: 24px;
+        height: 24px;
+        margin-right: 0.75rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+}
+
+// Enhanced visibility for common activity types
+.modtype_quiz .icon,
+.modtype_forum .icon,
+.modtype_assign .icon,
+a[href*="mod/quiz"] .icon,
+a[href*="mod/forum"] .icon,
+a[href*="mod/assign"] .icon {
+    background-color: rgba(0, 0, 0, 0.05);
+    padding: 0.5rem;
+    border-radius: 6px;
+    transition: background-color 0.2s ease;
+    
+    &:hover {
+        background-color: rgba(0, 0, 0, 0.1);
+    }
+}
+
+// Specific activity type styling
+.modtype_quiz .icon,
+a[href*="mod/quiz"] .icon {
+    color: #dc3545; // Bootstrap danger color for quizzes
+}
+
+.modtype_forum .icon,
+a[href*="mod/forum"] .icon {
+    color: #0d6efd; // Bootstrap primary color for forums
+}
+
+.modtype_assign .icon,
+a[href*="mod/assign"] .icon {
+    color: #198754; // Bootstrap success color for assignments
+}
+
+// Make icons more prominent in navigation
+.block_navigation,
+.block_settings {
+    .icon {
+        width: 20px;
+        height: 20px;
+        margin-right: 0.5rem;
+        opacity: 0.9;
+    }
+    
+    .tree_item:hover .icon {
+        opacity: 1;
+    }
+}
+
+// Enhanced visibility for activity icons in course sections
+.course-content {
+    .activityiconcontainer {
+        width: 36px;
+        height: 36px;
+        
+        .icon {
+            font-size: 1.25rem;
+        }
+    }
+}

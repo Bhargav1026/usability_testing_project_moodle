@@ -529,21 +529,6 @@ textarea[data-auto-rows] {
   .fitem .fitemtitle { flex: 0 0 100%; }
 }
 
-/* === [Accessibility] Make required fields obvious beyond color === */
-/* Moodle already outputs <abbr class="required" title="Required">*</abbr>.
-   This ensures a textual cue is visible even for color-blind users. */
-.fitem .fitemtitle .required::after,
-.col-form-label .required::after {
-  content: " * Required";
-  font-weight: 600;
-  margin-left: .25rem;
-}
-
-/* Ensure the abbr isn’t styled in a way that hides meaning */
-abbr.required[title="Required"] {
-  text-decoration: none;
-  border: 0;
-}
 
 /* === [Validation] Make inline errors clearly visible and readable === */
 .form-control.is-invalid,
@@ -648,50 +633,105 @@ input.form-control.error {
   width: 100%;
   max-width: 100%;
 }
-/* === [A11y] Replace color-only required indicators with clear text cues === */
-/* Covers common Moodle markers: abbr.required, .form-required, .req,
-   and labels that carry aria-required="true". */
-
-.mform abbr.required::after,
-.mform .form-required::after,
-.mform label .req::after,
-.mform .col-form-label[aria-required="true"]::after,
-.mform .form-label[aria-required="true"]::after {
-  content: " (Required)";
-  font-weight: 600;
-  margin-left: .25rem;
-}
-
-/* Remove any decoration that implies color-only meaning */
-.mform abbr.required {
-  text-decoration: none;
-  border: 0;
-}
-
-/* If a theme colors the required icon red, don’t rely on that color for meaning */
+/* === [A11y] Required indicators — leave text injection to JS === */
+.mform abbr.required,
 .mform .form-required,
 .mform label .req {
-  color: inherit; /* keep visible but not the only cue */
-}
-/* === [A11y: Color-independent required markers — robust solution] === */
-/*  A) If a label contains a required icon inside .form-label-addon, append '(Required)' after the label text.
-       Works on modern browsers via :has(). */
-.mform .form-label:has(.form-label-addon .form-required)::after,
-.mform .col-form-label:has(.form-label-addon .form-required)::after {
-  content: " (Required)";
-  font-weight: 600;
-  margin-left: .35rem;
+  text-decoration: none;
+  border: 0;
+  color: inherit;
 }
 
-/*  B) Bring addons (help/required icons) next to the label instead of flush right.
-       We override Boost's auto margin which pushes them to the far edge. */
+/* === [A11y] Textual Required label (scoped to labels/legends only) === */
+/* Add readable text for required fields without relying on color alone. */
+/* Only show (Required) text for elements with the red required symbol */
+.mform label .form-required::after,
+.mform legend .form-required::after {
+  content: " (Required)";
+  font-weight: 600;
+  font-size: 0.9em;
+}
+/* Don't show (Required) text for question mark help icons */
+.mform label abbr[title="Required"]::after,
+.mform legend abbr[title="Required"]::after {
+  content: "";
+}
+
+/* Explicitly prevent any accidental inheritance inside help/tooltip regions */
+.mform .helptooltip .form-required::after,
+.mform .iconhelp .form-required::after,
+.mform [data-region="help-icon"] .form-required::after,
+.mform .helptooltip abbr[title="Required"]::after,
+.mform .iconhelp abbr[title="Required"]::after,
+.mform [data-region="help-icon"] abbr[title="Required"]::after {
+  content: "";
+}
+
+/* === [A11y] Required text placement: move from addon to label === */
+/* 1) Hide the tiny red-dot marker everywhere (we will use text instead). */
+.mform label .form-required,
+.mform legend .form-required,
+.mform .form-label-addon abbr[title="Required"] {
+  font-size: 0;         /* hide dot */
+  line-height: 1;
+}
+
+/* 2) Prevent any ::after text on the abbr inside the addon (next to the ? icon). */
+.mform .form-label-addon abbr[title="Required"]::after {
+  content: "" !important;
+}
+
+/* 3) Show textual (Required) on the MAIN label when the addon contains the abbr.
+      Uses :has to detect a following sibling addon holding the required abbr. */
+.mform .form-label:has(+ .form-label-addon abbr[title="Required"])::after {
+    /* Do not inject textual "(Required)" here to avoid duplicating the label
+         next to the help/addon icon. Textual indication is handled on the
+         main label itself or via other accessibility mechanisms. */
+    content: "" !important;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+/* Keep support for forms that render .form-required directly inside label/legend */
+.mform label .form-required::after,
+.mform legend .form-required::after {
+  content: " (Required)";
+  font-weight: 600; 
+  font-size: 0.9rem;
+}
+/* === [A11y] Label/addon alignment only (no text injection in CSS) === */
 @media (min-width: 576px) {
   .mform:not(.full-width-labels) .col-form-label .form-label-addon {
     margin-left: .5rem !important;
   }
 }
 
-/* Make label line a flex row so text + '(Required)' + icons sit together neatly */
+/* === Override Required Text Display === */
+/* Show (Required) text only for red asterisk fields */
+.mform label .form-required::after {
+  content: " (Required)" !important;
+  font-weight: 600;
+  font-size: 0.9em;
+}
+
+/* Hide (Required) text for question mark help icons */
+.mform label abbr[title="Required"]::after,
+.mform .form-label-addon abbr[title="Required"]::after,
+.mform .form-label:has(+ .form-label-addon abbr[title="Required"])::after {
+  content: "" !important;
+}
+
+/* Ensure red asterisk is visible */
+.mform label .form-required {
+  color: #d43f3a;
+  margin-left: 3px;
+  display: inline;
+}
+
+/* Hide the required marker in addons completely */
+.mform .form-label-addon abbr[title="Required"] {
+  display: none;
+}
 [id^="page-course-"] .mform .col-form-label,
 [id^="page-course-"] .mform .form-label {
   display: flex;
@@ -700,12 +740,105 @@ input.form-control.error {
   white-space: normal;
   overflow-wrap: anywhere;
 }
+/* Hide (Required) when it follows a help icon (question mark) in course forms */
+/* Always show (Required) next to the red asterisk for accessibility */
+.col-form-label .utp-required-text {
+    display: inline !important;
+    font-weight: 600;
+    margin-left: 0.35rem;
+}
 
-/* Keep legacy markers readable, too */
-.mform abbr.required::after,
-.mform .form-required::after {
-  /* If both rules apply, this will render on the icon itself; harmless as the main text is added on the label above */
-  content: " (Required)";
-  font-weight: 600;
-  margin-left: .25rem;
+/* === [A11y] Override Required Text Display === */
+/* First, hide all required markers and text */
+.mform label .form-required::after,
+.mform label abbr[title="Required"]::after,
+.mform .form-label-addon abbr[title="Required"]::after,
+.mform .form-label:has(+ .form-label-addon abbr[title="Required"])::after,
+.mform .helptooltip abbr[title="Required"]::after,
+.mform [data-region="help-icon"] abbr[title="Required"]::after,
+.mform .utp-required-text,
+.mform label .req::after {
+    content: none !important;
+    display: none !important;
+}
+
+/* Show required symbol and text ONLY for red exclamation marks */
+.mform .fa-circle-exclamation.text-danger {
+    display: inline-block !important;
+    color: #dc3545 !important;
+    margin-right: 0.25rem;
+    vertical-align: middle !important; /* align icon on label baseline */
+    position: relative !important;
+    top: 0 !important;
+}
+
+.mform .fa-circle-exclamation.text-danger::after {
+    /* ensure icon itself has no pseudo text - we will render the text on the label */
+    content: none !important;
+    display: none !important;
+}
+
+/* Make labels inline-flex so icon + text align horizontally */
+.mform .form-label,
+.mform .col-form-label {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.4rem !important;
+}
+
+/* Inject (Required) on the main label when it contains the red exclamation icon.
+   Using :has keeps the text tied to the label baseline and avoids overlap. */
+.mform .form-label:has(.fa-circle-exclamation.text-danger)::after,
+.mform .col-form-label:has(.fa-circle-exclamation.text-danger)::after {
+    content: " (Required)" !important;
+    font-weight: 600 !important;
+    font-size: 0.9em !important;
+    margin-left: 0 !important;
+    white-space: nowrap !important;
+    vertical-align: middle !important;
+    line-height: 1 !important;
+    display: inline-block !important;
+    color: inherit !important;
+}
+
+/* Also show (Required) when the legacy .form-required marker is used inside the label
+   (but do not show when the required marker lives in the help/addon area). */
+.mform .form-label:has(.form-required):not(:has(+ .form-label-addon abbr[title="Required"]))::after,
+.mform .col-form-label:has(.form-required):not(:has(+ .form-label-addon abbr[title="Required"]))::after {
+    content: " (Required)" !important;
+    font-weight: 600 !important;
+    font-size: 0.9em !important;
+    white-space: nowrap !important;
+    vertical-align: middle !important;
+    line-height: 1 !important;
+    display: inline-block !important;
+    color: inherit !important;
+}
+
+/* And also when an abbr[title=\"Required\"] is present directly inside the label (not in the addon/help). */
+.mform .form-label:has(abbr[title="Required"]):not(:has(+ .form-label-addon abbr[title="Required"]))::after,
+.mform .col-form-label:has(abbr[title="Required"]):not(:has(+ .form-label-addon abbr[title="Required"]))::after {
+    content: " (Required)" !important;
+    font-weight: 600 !important;
+    font-size: 0.9em !important;
+    white-space: nowrap !important;
+    vertical-align: middle !important;
+    line-height: 1 !important;
+    display: inline-block !important;
+    color: inherit !important;
+}
+
+/* Explicitly hide all question mark help icon required markers */
+.mform .form-label-addon abbr[title="Required"],
+.mform .helptooltip abbr[title="Required"],
+.mform [data-region="help-icon"] abbr[title="Required"],
+.mform .form-label-addon .req {
+    display: none !important;
+}
+
+/* Hide any extra required text spans */
+.mform .form-label-addon .utp-required-text,
+.mform .helptooltip .utp-required-text,
+.mform [data-region="help-icon"] .utp-required-text {
+    display: none !important;
 }

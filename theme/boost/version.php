@@ -24,6 +24,6 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2025041400;
+$plugin->version   = 2025092501; // Bump to force cache rebuild for JS/CSS changes.
 $plugin->requires  = 2025040800;
 $plugin->component = 'theme_boost';

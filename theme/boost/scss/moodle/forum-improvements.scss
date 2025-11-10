@@ -1,0 +1,119 @@
+// Forum thread readability improvements
+
+// Target Moodle's actual post structure: article.forum-post-container > div.forumpost
+.forum-post-container {
+    margin-left: 0; /* Reset default margin */
+}
+
+/* Base post container styling */
+.forum-post-container > .forumpost {
+    background: #ffffff;
+    border-radius: 0.25rem;
+    border: 1px solid #e9ecef;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+    transition: box-shadow 0.16s ease, border-color 0.16s ease, background-color 0.16s ease;
+}
+
+/* Unread posts: strong left accent + subtle background */
+.forum-post-container > .forumpost.unread {
+    background-color: #f3f8ff; /* very light blue */
+    border-color: #d0e6ff;
+    box-shadow: 0 1px 0 rgba(15,111,197,0.03) inset;
+    position: relative;
+}
+
+/* Add a clear NEW badge when template marks the first unread anchor (#unread). */
+.forum-post-container > .forumpost .mb-2 > a#unread,
+.forum-post-container > .forumpost > a#unread {
+    display: none; /* anchor is invisible but we use sibling selector below */
+}
+
+/* If the post contains the isfirstunread anchor, show a badge in the top-left */
+.forum-post-container > .forumpost:has(a#unread)::before {
+    content: "NEW";
+    position: absolute;
+    left: -0.6rem;
+    top: -0.6rem;
+    background: #0f6fc5;
+    color: white;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 0.18rem 0.4rem;
+    border-radius: 0.25rem;
+    box-shadow: 0 2px 6px rgba(15,111,197,0.12);
+}
+
+/* Make action links (permalink/edit/reply) easier to find but less noisy */
+.forum-post-container .post-actions .btn-link {
+    color: #0f6fc5;
+    padding: 0 0.25rem;
+}
+
+/* Improve content spacing */
+.forum-post-container .post-content-container {
+    margin-top: 0.6rem;
+    line-height: 1.6;
+}
+
+/* Indentation by nesting depth using nested article selectors */
+.forum-post-container article { margin-left: 0; }
+.forum-post-container article article { margin-left: 2rem; }
+.forum-post-container article article article { margin-left: 3.5rem; }
+.forum-post-container article article article article { margin-left: 5rem; }
+.forum-post-container article article article article article { margin-left: 6.5rem; }
+
+/* Slight hover highlight to help track across long threads */
+.forum-post-container > .forumpost:hover {
+    border-color: #c7e2ff;
+    box-shadow: 0 6px 14px rgba(12,75,125,0.04);
+}
+
+/* Improve header layout inside the post (author and timestamp) */
+.forum-post-container .header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+/* Tweak avatar */
+.forum-post-container .header img {
+    width: 44px;
+    height: 44px;
+}
+
+/* Make unread posts stand out in lists as well */
+.forumpost.unread {
+    position: relative;
+    
+    &::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 4px;
+        background: #0f6fc5;
+        border-radius: 2px 0 0 2px;
+    }
+    
+    .topic {
+        font-weight: 600;
+    }
+}
+
+/* Highlight unread posts in discussion lists */
+.discussion.unread {
+    background-color: #f8faff;
+    
+    .topic {
+        font-weight: 600;
+    }
+    
+    &:hover {
+        background-color: #f3f8ff;
+    }
+}
+
+/* Keep reply actions on the right */
+.forum-post-container .post-actions { margin-left: auto; }
